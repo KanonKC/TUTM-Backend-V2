@@ -10,6 +10,7 @@ import {
 } from "./views/playlist";
 import { addVideoToQueueView, clearQueueInPlaylistView, deleteQueueByIdView, getAllQueuesInPlaylistView, getQueueByIdView, increaseQueuePlayedCountView } from "./views/queue";
 import cors from '@fastify/cors'
+import { searchYoutubePlaylistAsBaseAttributesView, searchYoutubeVideoAsBaseAttributesView } from "./views/youtube";
 
 const server = fastify()
 server.register(cors, { 
@@ -32,5 +33,8 @@ server.get('/queues/:queueId', getQueueByIdView)
 server.delete('/queues/:queueId', deleteQueueByIdView)
 
 server.put('/queues/:queueId/increment', increaseQueuePlayedCountView)
+
+server.get('/youtube/videos/:query', searchYoutubeVideoAsBaseAttributesView)
+server.get('/youtube/playlist/:playlistId', searchYoutubePlaylistAsBaseAttributesView)
 
 export default server

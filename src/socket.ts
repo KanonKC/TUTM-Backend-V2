@@ -8,9 +8,8 @@ const io = new Server({
 });
 
 io.on("connection", (socket) => {
-    console.log("a user connected");
+    console.log("Socket enabled");
     socket.on("reloadQueuesInPlaylist", async (playlistId) => {
-        console.log("Request reload queue in playlist", playlistId);
         io.emit("reloadQueuesInPlaylist", playlistId);
     });
 })

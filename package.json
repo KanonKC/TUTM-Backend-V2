@@ -13,6 +13,7 @@
     "@fastify/cors": "^9.0.1",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.0",
+    "macaddress": "^0.5.3",
     "mysql2": "^3.10.1",
     "sequelize": "^6.37.3",
     "socket.io": "^4.7.5",

@@ -1,25 +1,31 @@
 import { configDotenv } from "dotenv"
-import { YoutubeContentDetails, YoutubeSearch, YoutubeSnippet } from "../types/youtube"
+import { YoutubeContentDetails, YoutubePlaylist, YoutubeSearch, YoutubeSnippet } from "../types/youtube"
 import { youtubeTimeFormatToSecond } from "../utilities/Youtube"
 
 configDotenv()
 
 const CREDENTIAL = process.env.YOUTUBE_API_KEY
 
-export async function searchVideo(query:string) {
+export async function searchYoutubeVideo(query:string) {
     const response = await fetch(`https://youtube.googleapis.com/youtube/v3/search?q=${query}&type=video&maxResults=10&part=snippet&key=${CREDENTIAL}`,{
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
         }
     })
-
-    const data:YoutubeSearch = (await response.json()) as YoutubeSearch
     
-    return data.items.map((item) => ({
-        ...item.snippet,
-        id: item.id
-    }))
+    return response.json() as Promise<YoutubeSearch>
+}
+
+export async function searchYoutubePlaylist(playlistId:string) {
+    const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&key=${CREDENTIAL}`,{
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+
+    return response.json() as Promise<YoutubePlaylist>
 }
 
 export async function getYoutubeVideoData(keyId:string) {

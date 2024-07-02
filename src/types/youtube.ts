@@ -42,6 +42,51 @@ export interface YoutubeSearch {
     }[]
 }
 
+export interface YoutubePlaylist {
+    kind: string;
+    etag: string;
+    nextPageToken: string;
+    pageInfo: {
+        totalResults: number;
+        resultsPerPage: number;
+    }
+    items: {
+        kind: string;
+        etag: string;
+        id: string;
+        snippet: {
+            publishedAt: string;
+            channelId: string;
+            title: string;
+            description: string;
+            thumbnails: {
+                default: {
+                    url: string;
+                    width: number;
+                    height: number;
+                }
+                medium: {
+                    url: string;
+                    width: number;
+                    height: number;
+                }
+                high: {
+                    url: string;
+                    width: number;
+                    height: number;
+                }
+            }
+            channelTitle: string;
+            liveBroadcastContent: string;
+            resourceId: {
+                kind: string;
+                videoId: string;
+            }
+            videoOwnerChannelTitle: string;
+        }
+    }[]
+}
+
 export interface YoutubeSnippet {
     items: {
         id: string;
@@ -67,4 +112,12 @@ export interface YoutubeContentDetails {
             duration: string;
         }
     }[]
+}
+
+export interface YoutubeBaseAttributes {
+    title: string
+    channelTitle: string
+    description: string
+    thumbnail: string
+    url: string
 }
