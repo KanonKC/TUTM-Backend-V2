@@ -1,12 +1,14 @@
+export type PlaylistType = "linear" | "priority" | "dual";
+
 export interface Playlist {
     id: string;
-    // code: string;
+    type: PlaylistType;
     current_index: number | null;
 }
 
 export interface PlaylistCreation {
-    // code: string;
     id: string;
+    type: PlaylistType;
     current_index: number | null;
 }
 

@@ -6,12 +6,11 @@ export const PlaylistModel:ModelDefined<Playlist, PlaylistCreation> = sequelize.
     id: {
         type: DataTypes.STRING,
         primaryKey: true,
-        // defaultValue: UUIDV4,
     },
-    // code: {
-    //     type: DataTypes.STRING,
-    //     unique: true,
-    // },
+    type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     current_index: {
         type: DataTypes.INTEGER,
         allowNull: true,
@@ -94,8 +93,8 @@ YoutubeVideoModel.hasMany(QueueModel, {
 //     onUpdate: 'CASCADE',
 // })
 
-// sequelize.sync({force:true}).then(() => {
-//     console.log('DB tables created successfully!');
-// }).catch((error) => {
-//     console.error('Unable to create table : ', error);
-// });
+sequelize.sync().then(() => {
+    console.log('DB tables created successfully!');
+}).catch((error) => {
+    console.error('Unable to create table : ', error);
+});
