@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.ts",
+    "socket": "nodemon src/socket.ts"
   },
   "keywords": [],
   "author": "",
@@ -12,11 +14,15 @@
   "dependencies": {
     "@fastify/cors": "^9.0.1",
     "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "fastify": "^4.28.0",
     "macaddress": "^0.5.3",
     "mysql2": "^3.10.1",
     "sequelize": "^6.37.3",
     "socket.io": "^4.7.5",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21"
   }
 }
