@@ -11,8 +11,8 @@ datasource db {
 }
 
 model Playlist {
-    id              String   @id @default(cuid())
-    slug            String   @unique
+    id              String   @id //@default(cuid())
+    // slug            String   @unique
     type            String
     currentIndex    Int?
     queues          Queue[]

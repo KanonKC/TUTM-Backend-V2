@@ -9,7 +9,8 @@ export async function getAllPlaylists() {
 export async function createPlaylist(body: { id: string }) {
     const playlist = await prisma.playlist.create({
         data: {
-            slug: body.id,
+            // slug: body.id,
+            id: body.id,
             type: 'linear'
         }
     })
