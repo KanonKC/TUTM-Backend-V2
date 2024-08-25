@@ -1,95 +1,116 @@
-import { FastifyReply, FastifyRequest } from "fastify";
-import { PlaylistModel, QueueModel, YoutubeVideoModel } from "../models";
-import { YoutubeVideo } from "../types/model";
+import { YoutubeVideo } from "@prisma/client";
+import { prisma } from "../prisma";
 
 export async function getAllPlaylists() {
-    const playlists = await PlaylistModel.findAll()
+    const playlists = await prisma.playlist.findMany()
     return playlists
 }
 
 export async function createPlaylist(body: { id: string }) {
-    const playlist = await PlaylistModel.create({
-        id: body.id,
+    const playlist = await prisma.playlist.create({
+        data: {
+            // slug: body.id,
+            id: body.id,
+            type: 'linear'
+        }
     })
-    return playlist.dataValues
+    return playlist
 }
 
 export async function getPlaylistWithCurrentVideoById(playlistId: string) {
-    const playlist = await PlaylistModel.findOne({where: {id: playlistId}})
+
+    const playlist = await prisma.playlist.findUniqueOrThrow({
+        where: { id: playlistId },
+        include: { queues: {
+            where: { playlistId },
+            orderBy: { createdAt: 'asc' }
+        }}
+    })
 
     if (!playlist) throw new Error('Playlist not found')
 
     let currentVideo:YoutubeVideo|null = null;
-    if (playlist?.dataValues.current_index) {
-        const currentVideoModel = await YoutubeVideoModel.findOne({where: {id: playlist.dataValues.current_index}})
-        if (currentVideoModel) {
-            currentVideo = currentVideoModel.dataValues
-        }
+
+    if (playlist.currentIndex) {
+        const currentQueue = playlist.queues[playlist.currentIndex]
+        currentVideo = await prisma.youtubeVideo.findFirst({where: {id: currentQueue.youtubeVideoId}})
     }
 
-    return { ...playlist.dataValues, video: currentVideo }
+    return { ...playlist, video: currentVideo }
 }
 
 export async function playIndex(playlistId: string, index: number) {
-    const playlist = await PlaylistModel.findOne({where: {id: playlistId}})
+    const playlist = await prisma.playlist.findUnique({where: {id: playlistId}})
 
     if (!playlist) throw new Error('Playlist not found')
 
-    await playlist.update({current_index: index})
-    return playlist.dataValues
+    await prisma.playlist.update({
+        where: { id: playlistId },
+        data: { currentIndex: index }
+    })
+    return playlist
 }
 
 export async function playNext(playlistId: string) {
-    const playlist = await PlaylistModel.findOne({where: {id: playlistId}})
+    const playlist = await prisma.playlist.findUnique({where: {id: playlistId}})
 
     if (!playlist) throw new Error('Playlist not found')
 
     let nextIndex = 0
 
-    if (playlist.dataValues.current_index !== null) {
-        nextIndex = playlist.dataValues.current_index + 1
+    if (playlist.currentIndex !== null) {
+        nextIndex = playlist.currentIndex + 1
     }
     
-    await playlist.update({current_index: nextIndex})
-    return playlist.dataValues
+    await prisma.playlist.update({
+        where: { id: playlistId },
+        data: { currentIndex: nextIndex }
+    })
+    return playlist
 }
 
 export async function playPrevious(playlistId: string) {
-    const playlist = await PlaylistModel.findOne({where: {id: playlistId}})
-    const queues = await QueueModel.findAll({where: {playlist_id: playlistId}})
+    const playlist = await prisma.playlist.findUnique({where: { id: playlistId }})
+    const queues = await prisma.queue.findMany({where: { playlistId }})
     const queueCount = queues.length
 
     if (!playlist) throw new Error('Playlist not found')
 
     let nextIndex = 0
 
-    if (playlist.dataValues.current_index !== null) {
-        nextIndex = (playlist.dataValues.current_index - 1) % queueCount
+    if (playlist.currentIndex !== null) {
+        nextIndex = (playlist.currentIndex - 1) % queueCount
     }
     
-    await playlist.update({current_index: nextIndex})
-    return playlist.dataValues
+    await prisma.playlist.update({
+        where: { id: playlistId },
+        data: { currentIndex: nextIndex }
+    })
+    return playlist
 }
 
 export async function playAlgorithm(playlistId: string) {
-    const playlist = await PlaylistModel.findOne({where: {id: playlistId}})
-    const queues = await QueueModel.findAll({where: {playlist_id: playlistId}, order: [['createdAt', 'ASC']]})
+    const playlist = await prisma.playlist.findUnique({where: {id: playlistId}})
+    const queues = await prisma.queue.findMany({where: { playlistId }, orderBy: { createdAt: 'asc' }})
 
-    queues.forEach(queue => console.log(queue.dataValues))
+    queues.forEach(queue => console.log(queue))
     
     if (!playlist) throw new Error('Playlist not found')
         
-    const start = playlist.dataValues.current_index
+    const start = playlist.currentIndex
     const queueCount = queues.length
-    const minimumPlayedCount = Math.min(...queues.map(queue => queue.dataValues.played_count))
+    const minimumPlayedCount = Math.min(...queues.map(queue => queue.playedCount))
     
     for (let i = 1; i < queueCount; i++) {
         const index = ((start ?? 0) + i) % queueCount
         const queue = queues[index]
-        console.log(index,queue.dataValues.played_count,minimumPlayedCount,queue.dataValues.id)
-        if (queue.dataValues.played_count === minimumPlayedCount) {
-            await playlist.update({current_index: index})
-            return playlist.dataValues
+        // console.log(index,queue.playedCount,minimumPlayedCount,queue.id)
+        if (queue.playedCount === minimumPlayedCount) {
+            await prisma.playlist.update({
+                where: { id: playlistId },
+                data: { currentIndex: index }
+            })
+            return playlist
         }
     }
 }
