@@ -1,5 +1,8 @@
 import { Server } from "socket.io";
 import { getAllQueuesInPlaylist } from "./controllers/queue";
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 const io = new Server({
     cors: {
@@ -14,4 +17,4 @@ io.on("connection", (socket) => {
     });
 })
 
-io.listen(8001);
+io.listen(Number(process.env.SOCKET_PORT));
