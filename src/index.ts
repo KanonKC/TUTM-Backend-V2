@@ -1,6 +1,9 @@
+import { configDotenv } from 'dotenv';
 import server from './router'
 
-server.listen({ port: 8000 }, (err, address) => {
+configDotenv();
+
+server.listen({ port: Number(process.env.BACKEND_PORT) }, (err, address) => {
   if (err) {
     console.error(err)
     process.exit(1)
