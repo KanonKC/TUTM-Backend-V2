@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Playlist {
+    id              String   @id @default(cuid())
+    slug            String   @unique
+    type            String
+    currentIndex    Int?
+    queues          Queue[]
+    createdAt       DateTime @default(now())
+}
+
+model YoutubeVideo {
+    id              String   @id @default(cuid())
+    youtubeId       String
+    title           String
+    channelTitle    String
+    description     String?
+    thumbnail       String
+    duration        Int
+    isCleared       Boolean @default(false)
+    totalPlayed     Int     @default(0)
+    queues          Queue[]
+    createdAt       DateTime @default(now())
+}
+
+model Queue {
+    id              String       @id @default(cuid())
+    youtubeVideo    YoutubeVideo @relation(fields: [youtubeVideoId], references: [id])
+    youtubeVideoId  String
+    playlist        Playlist     @relation(fields: [playlistId], references: [id])
+    playlistId      String
+    playedCount     Int          @default(0)
+    createdAt       DateTime     @default(now())
+}
