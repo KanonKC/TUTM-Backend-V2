@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p tsconfig.json",
     "dev": "nodemon src/index.ts",
     "socket": "nodemon src/socket.ts"
   },
