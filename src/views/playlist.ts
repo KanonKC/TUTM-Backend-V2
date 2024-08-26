@@ -40,7 +40,7 @@ export async function playIndexView(request: FastifyRequest<{
 }>, reply:FastifyReply) {
     const id = request.params.playlistId
     const index = request.params.indexNo
-    const playlist = await playIndex(id, index)
+    const playlist = await playIndex(id, Number(index))
     reply.send(playlist)
 }
 
