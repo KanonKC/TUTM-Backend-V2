@@ -112,3 +112,25 @@ export async function increaseQueuePlayedCount(queueId: string) {
         data: {playedCount: {increment: 1}}
     })
 }
+
+export async function swapQueuePosition(queueId1: string, queueId2: string) {
+    const queue1 = await prisma.queue.findUnique({where: {id: queueId1}})
+    const queue2 = await prisma.queue.findUnique({where: {id: queueId2}})
+
+    if (!queue1 || !queue2) throw new Error('Queue not found')
+
+    const updateQueue2 = await prisma.queue.update({
+        where: {id: queueId2},
+        data: {youtubeVideoId: queue1.youtubeVideoId}
+    })
+
+    const updateQueue1 = await prisma.queue.update({
+        where: {id: queueId1},
+        data: {youtubeVideoId: queue2.youtubeVideoId}
+    })
+
+    return {
+        queue1: updateQueue1,
+        queue2: updateQueue2
+    }
+}

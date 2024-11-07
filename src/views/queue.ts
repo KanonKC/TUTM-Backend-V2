@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { addVideoToQueue, clearQueueInPlaylist, deleteQueueById, getAllQueuesInPlaylist, getQueueById, increaseQueuePlayedCount } from "../controllers/queue";
+import { addVideoToQueue, clearQueueInPlaylist, deleteQueueById, getAllQueuesInPlaylist, getQueueById, increaseQueuePlayedCount, swapQueuePosition } from "../controllers/queue";
 import { listWrap } from "../utilities/ListWrapper";
 
 export async function getAllQueuesInPlaylistView(request: FastifyRequest<{
@@ -50,4 +50,16 @@ export async function increaseQueuePlayedCountView(request: FastifyRequest<{
     const queueId = request.params.queueId
     const queue = await increaseQueuePlayedCount(queueId)
     replay.send(queue)
+}
+
+export async function swapQueuePositionView(request: FastifyRequest<{
+    Querystring: { queueId1: string, queueId2: string }
+}>,replay: FastifyReply) {
+    try {
+        const { queueId1, queueId2 } = request.query
+        const queue = await swapQueuePosition(queueId1, queueId2)
+        replay.send(queue)
+    } catch (error) {
+        replay.status(400).send({ error })
+    }
 }

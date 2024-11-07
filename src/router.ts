@@ -8,7 +8,7 @@ import {
     playPreviousView,
     playAlgorithmView,
 } from "./views/playlist";
-import { addVideoToQueueView, clearQueueInPlaylistView, deleteQueueByIdView, getAllQueuesInPlaylistView, getQueueByIdView, increaseQueuePlayedCountView } from "./views/queue";
+import { addVideoToQueueView, clearQueueInPlaylistView, deleteQueueByIdView, getAllQueuesInPlaylistView, getQueueByIdView, increaseQueuePlayedCountView, swapQueuePositionView } from "./views/queue";
 import cors from '@fastify/cors'
 import { searchYoutubePlaylistAsBaseAttributesView, searchYoutubeVideoAsBaseAttributesView } from "./views/youtube";
 
@@ -31,8 +31,8 @@ server.delete('/playlists/:playlistId/queues', clearQueueInPlaylistView)
 
 server.get('/queues/:queueId', getQueueByIdView)
 server.delete('/queues/:queueId', deleteQueueByIdView)
-
 server.put('/queues/:queueId/increment', increaseQueuePlayedCountView)
+server.patch('/queues/swap', swapQueuePositionView)
 
 server.get('/youtube/videos/:query', searchYoutubeVideoAsBaseAttributesView)
 server.get('/youtube/playlist/:playlistId', searchYoutubePlaylistAsBaseAttributesView)

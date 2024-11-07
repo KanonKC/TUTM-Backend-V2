@@ -41,4 +41,5 @@ model Queue {
     playlistId      String
     playedCount     Int          @default(0)
     createdAt       DateTime     @default(now())
+    updateAt        DateTime     @updatedAt
 }
