@@ -12,9 +12,13 @@ datasource db {
 
 model Playlist {
     id              String   @id //@default(cuid())
-    // slug            String   @unique
     type            String
-    currentIndex    Int?
+    firstQueueId    String?  @unique
+    firstQueue      Queue?   @relation("FirstQueue",fields: [firstQueueId], references: [id])
+    currentQueueId  String?  @unique
+    currentQueue    Queue?   @relation("CurrentQueue",fields: [currentQueueId], references: [id])
+    lastQueueId     String?  @unique
+    lastQueue       Queue?   @relation("LastQueue",fields: [lastQueueId], references: [id])
     queues          Queue[]
     createdAt       DateTime @default(now())
 }
@@ -34,12 +38,18 @@ model YoutubeVideo {
 }
 
 model Queue {
-    id              String       @id @default(cuid())
-    youtubeVideo    YoutubeVideo @relation(fields: [youtubeVideoId], references: [id])
-    youtubeVideoId  String
-    playlist        Playlist     @relation(fields: [playlistId], references: [id])
-    playlistId      String
-    playedCount     Int          @default(0)
-    createdAt       DateTime     @default(now())
-    updateAt        DateTime     @updatedAt
+    id                  String       @id @default(cuid())
+    youtubeVideo        YoutubeVideo @relation(fields: [youtubeVideoId], references: [id])
+    youtubeVideoId      String
+    playlist            Playlist     @relation(fields: [playlistId], references: [id])
+    playlistId          String
+    firstAtPlaylist     Playlist?    @relation("FirstQueue")
+    currentAtPlaylist   Playlist?    @relation("CurrentQueue")
+    lastAtPlaylist      Playlist?    @relation("LastQueue")
+    playedCount         Int          @default(0)
+    nextQueueId         String?      @unique
+    nextQueue           Queue?       @relation("NextQueue", fields: [nextQueueId], references: [id])
+    prevQueue           Queue?       @relation("NextQueue")
+    createdAt           DateTime     @default(now())
+    updateAt            DateTime     @updatedAt
 }

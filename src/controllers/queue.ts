@@ -121,12 +121,14 @@ export async function swapQueuePosition(queueId1: string, queueId2: string) {
 
     const updateQueue2 = await prisma.queue.update({
         where: {id: queueId2},
-        data: {youtubeVideoId: queue1.youtubeVideoId}
+        data: {youtubeVideoId: queue1.youtubeVideoId},
+        include: {youtubeVideo: true}
     })
 
     const updateQueue1 = await prisma.queue.update({
         where: {id: queueId1},
-        data: {youtubeVideoId: queue2.youtubeVideoId}
+        data: {youtubeVideoId: queue2.youtubeVideoId},
+        include: {youtubeVideo: true}
     })
 
     return {
