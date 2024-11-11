@@ -235,6 +235,7 @@ export async function swapQueuePosition(
 	let currentQueueId = playlist.firstQueueId;
 
 	let isChangeFirstIndex = false;
+    let isBackwardSwap = false;
 
 	if (index1 < index2) {
 		minIndex = index1;
@@ -257,6 +258,7 @@ export async function swapQueuePosition(
 			currentQueueId = currentQueue.nextQueueId;
 		}
 	} else {
+        isBackwardSwap = true;
 		if (index2 === 0) {
 			isChangeFirstIndex = true;
 			minIndex = 0;
@@ -366,11 +368,20 @@ export async function swapQueuePosition(
 	}
 
 	if (lastQueueId === queue.id) {
-        console.log("Change last queue id to targetQueue.id", targetQueue.id);
-		await prisma.playlist.update({
-			where: { id: playlist.id },
-			data: { lastQueueId: targetQueue.id },
-		});
+        if (isBackwardSwap && !isChangeFirstIndex) {
+            console.log("Change last queue id to targetQueue.nextQueueId", targetQueue.nextQueueId);
+            await prisma.playlist.update({
+                where: { id: playlist.id },
+                data: { lastQueueId: targetQueue.nextQueueId },
+            });
+        } else {
+
+            console.log("Change last queue id to targetQueue.id", targetQueue.id);
+            await prisma.playlist.update({
+                where: { id: playlist.id },
+                data: { lastQueueId: targetQueue.id },
+            });
+        }
 	} else if (lastQueueId === targetQueue.id) {
         console.log("Change last queue id to queue.id", queue.id);
 		await prisma.playlist.update({
