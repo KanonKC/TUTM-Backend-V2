@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "start": "node .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "build": "tsc -p tsconfig.json",
     "dev": "nodemon src/index.ts",
     "socket": "nodemon src/socket.ts"
@@ -16,14 +16,17 @@
   "dependencies": {
     "@fastify/cors": "^9.0.1",
     "@prisma/client": "^5.18.0",
+    "@types/jest": "^29.5.14",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "fastify": "^4.28.0",
+    "jest": "^29.7.0",
     "macaddress": "^0.5.3",
     "mysql2": "^3.10.1",
     "sequelize": "^6.37.3",
     "socket.io": "^4.7.5",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "ts-jest": "^29.2.5"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
