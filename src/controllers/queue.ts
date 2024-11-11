@@ -209,6 +209,7 @@ export async function swapQueuePosition(
 	index1: number,
 	index2: number
 ) {
+    console.log("index1", index1, "index2", index2);
 	if (index1 === index2) {
 		return {
 			queue1: null,
@@ -233,6 +234,8 @@ export async function swapQueuePosition(
 	let currentIndex = 0;
 	let currentQueueId = playlist.firstQueueId;
 
+	let isChangeFirstIndex = false;
+
 	if (index1 < index2) {
 		minIndex = index1;
 		maxIndex = index2;
@@ -254,7 +257,13 @@ export async function swapQueuePosition(
 			currentQueueId = currentQueue.nextQueueId;
 		}
 	} else {
-		minIndex = index2-1;
+		if (index2 === 0) {
+			isChangeFirstIndex = true;
+			minIndex = 0;
+		} else {
+			minIndex = index2 - 1;
+		}
+
 		maxIndex = index1;
 
 		while (currentQueueId !== null) {
@@ -285,46 +294,92 @@ export async function swapQueuePosition(
 	console.log("queue", queue.id, "targetQueue", targetQueue.id);
 
 	const prevQueue = queues.find((q) => q.nextQueueId === queue.id);
-    
-    console.log(`Change ${queue.id} nextQueueId to null`);
+
+	console.log(`Change ${queue.id} nextQueueId to null`);
 	await prisma.queue.update({
 		where: { id: queue.id },
 		data: { nextQueueId: null },
 	});
 
-    console.log(`Change ${targetQueue?.id} nextQueueId to null`);
+	if (!isChangeFirstIndex) {
+		console.log(`Change ${targetQueue?.id} nextQueueId to null`);
 
-	await prisma.queue.update({
-		where: { id: targetQueue?.id },
-		data: { nextQueueId: null },
-	});
+		await prisma.queue.update({
+			where: { id: targetQueue?.id },
+			data: { nextQueueId: null },
+		});
+	}
 
-    console.log(`Change ${prevQueue?.id} nextQueueId to ${queue.nextQueueId}`);
+	console.log(`Change ${prevQueue?.id} nextQueueId to ${queue.nextQueueId}`);
 
-	await prisma.queue.update({
-		where: { id: prevQueue?.id },
-		data: { nextQueueId: queue.nextQueueId },
-	});
+	if (prevQueue) {
+		await prisma.queue.update({
+			where: { id: prevQueue.id },
+			data: { nextQueueId: queue.nextQueueId },
+		});
+	} else {
+		await prisma.queue.update({
+			where: { id: targetQueue.id },
+			data: { nextQueueId: queue.nextQueueId },
+		});
+	}
 
-    console.log(`Change ${queue.id} nextQueueId to ${targetQueue?.nextQueueId}`);
+	if (isChangeFirstIndex) {
+		console.log(`Change ${queue.id} nextQueueId to ${targetQueue.id}`);
+		await prisma.queue.update({
+			where: { id: queue.id },
+			data: { nextQueueId: targetQueue.id },
+		});
+	} else {
+		console.log(
+			`Change ${queue.id} nextQueueId to ${targetQueue?.nextQueueId}`
+		);
+		await prisma.queue.update({
+			where: { id: queue.id },
+			data: { nextQueueId: targetQueue.nextQueueId },
+		});
+	}
 
-	const updateQueue1 = await prisma.queue.update({
-		where: { id: queue.id },
-		data: { nextQueueId: targetQueue?.nextQueueId },
-	});
+	if (!isChangeFirstIndex) {
+		console.log(`Change ${targetQueue?.id} nextQueueId to ${queue.id}`);
+		await prisma.queue.update({
+			where: { id: targetQueue.id },
+			data: { nextQueueId: queue.id },
+		});
+	}
 
-    console.log(`Change ${targetQueue?.id} nextQueueId to ${queue.id}`);
+    console.log('-------------------------------------')
 
-	const updateQueue2 = await prisma.queue.update({
-		where: { id: targetQueue?.id },
-		data: { nextQueueId: queue.id },
-	});
+	const { firstQueueId, lastQueueId } = playlist;
+	if (firstQueueId === queue.id) {
+        console.log("Change first queue id to targetQueue.id", targetQueue.id);
+		await prisma.playlist.update({
+			where: { id: playlist.id },
+			data: { firstQueueId: queue.nextQueueId },
+		});
+	} else if (firstQueueId === targetQueue.id && isChangeFirstIndex) {
+        console.log("Change first queue id to queue.id", queue.id);
+		await prisma.playlist.update({
+			where: { id: playlist.id },
+			data: { firstQueueId: queue.id },
+		});
+	}
 
+	if (lastQueueId === queue.id) {
+        console.log("Change last queue id to targetQueue.id", targetQueue.id);
+		await prisma.playlist.update({
+			where: { id: playlist.id },
+			data: { lastQueueId: targetQueue.id },
+		});
+	} else if (lastQueueId === targetQueue.id) {
+        console.log("Change last queue id to queue.id", queue.id);
+		await prisma.playlist.update({
+			where: { id: playlist.id },
+			data: { lastQueueId: queue.id },
+		});
+	}
 
-	return {
-		queue1: updateQueue1,
-		queue2: updateQueue2,
-	};
+	return {};
 
 	// const updateQueue2 = await prisma.queue.update({
 	// 	where: { id: queueId2 },
