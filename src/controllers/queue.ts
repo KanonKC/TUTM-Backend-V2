@@ -48,8 +48,9 @@ export async function addVideoToQueue(playlistId: string, videoId: string) {
 	}
 
 	const queues = await getAllQueuesInPlaylist(playlistId);
+    console.log(queues);
 	const nextOrder =
-		queues.length === 0 ? 0 : Math.max(...queues.map((q) => q.order));
+		queues.length === 0 ? 0 : Math.max(...queues.map((q) => q.order ?? -1)) + 1;
 	const video = videoModel;
 
 	const queue = await prisma.queue.create({
@@ -109,7 +110,7 @@ export async function increaseQueuePlayedCount(queueId: string) {
 	});
 }
 
-interface ReOrderQueuePayload {
+export interface ReOrderQueuePayload {
     queues: {
         queueId: string;
         order: number;
@@ -117,10 +118,13 @@ interface ReOrderQueuePayload {
 }
 
 export async function reOrderQueue(playlistId: string, payload: ReOrderQueuePayload) {
-	const queueList = await getAllQueuesInPlaylist(playlistId);
-    for(let i = 0; i < queueList.length; i++){
+    await prisma.queue.updateMany({
+        where: { playlistId },
+        data: { order: null },
+    });
+    for(let i = 0; i < payload.queues.length; i++){
         await prisma.queue.update({
-            where: { id: queueList[i].id },
+            where: { id: payload.queues[i].queueId },
             data: { order: payload.queues[i].order },
         });
     }

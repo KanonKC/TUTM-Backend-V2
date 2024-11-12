@@ -15,13 +15,14 @@ import {
 	getAllQueuesInPlaylistView,
 	getQueueByIdView,
 	increaseQueuePlayedCountView,
-	swapQueuePositionView,
+    reOrderQueueView,
 } from "./views/queue";
 import cors from "@fastify/cors";
 import {
 	searchYoutubePlaylistAsBaseAttributesView,
 	searchYoutubeVideoAsBaseAttributesView,
 } from "./views/youtube";
+import { reOrderQueue } from "./controllers/queue";
 
 const server = fastify();
 server.register(cors, {
@@ -44,7 +45,7 @@ server.delete("/playlists/:playlistId/queues", clearQueueInPlaylistView);
 server.get("/queues/:queueId", getQueueByIdView);
 server.delete("/queues/:queueId", deleteQueueByIdView);
 server.put("/queues/:queueId/increment", increaseQueuePlayedCountView);
-server.patch("/playlists/:playlistId/queues/swap", swapQueuePositionView);
+server.patch("/playlists/:playlistId/queues/order", reOrderQueueView);
 
 server.get("/youtube/videos/:query", searchYoutubeVideoAsBaseAttributesView);
 server.get(

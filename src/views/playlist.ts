@@ -40,11 +40,9 @@ export async function getPlaylistWithCurrentVideoByIdView(
 ) {
 	const id = request.params.playlistId;
 	try {
-		console.log("Call");
 		const playlist = await getPlaylistWithCurrentVideoById(id);
 		reply.send(playlist);
 	} catch (error) {
-		console.log("error");
 		reply.code(404).send({ error: "Error" });
 	}
 }

@@ -85,6 +85,7 @@ export async function playNext(playlistId: string) {
 
 	let nextQueueOrder = 0;
 	if (playlist.currentQueue) {
+        if (!playlist.currentQueue.order) throw new Error("Queue order not found");
         nextQueueOrder = (playlist.currentQueue.order + 1) % playlist.queues.length;
 	}
 
@@ -118,6 +119,7 @@ export async function playPrevious(playlistId: string) {
 
 	let prevQueueOrder = playlist.queues.length - 1;
 	if (playlist.currentQueue) {
+        if (!playlist.currentQueue.order) throw new Error("Queue order not found");
         prevQueueOrder = (playlist.currentQueue.order - 1) % playlist.queues.length;
 	}
 

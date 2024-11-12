@@ -6,7 +6,8 @@ import {
 	getAllQueuesInPlaylist,
 	getQueueById,
 	increaseQueuePlayedCount,
-	swapQueuePosition,
+    reOrderQueue,
+    ReOrderQueuePayload,
 } from "../controllers/queue";
 import { listWrap } from "../utilities/ListWrapper";
 
@@ -78,20 +79,18 @@ export async function increaseQueuePlayedCountView(
 	replay.send(queue);
 }
 
-export async function swapQueuePositionView(
+export async function reOrderQueueView(
 	request: FastifyRequest<{
 		Params: { playlistId: string };
-		Querystring: { index1: string; index2: string };
+        Body: ReOrderQueuePayload
 	}>,
 	replay: FastifyReply
 ) {
 	try {
 		const { playlistId } = request.params;
-		const { index1, index2 } = request.query;
-		const queue = await swapQueuePosition(
+		const queue = await reOrderQueue(
 			playlistId,
-			parseInt(index1),
-			parseInt(index2)
+			request.body,
 		);
 		replay.send(queue);
 	} catch (error) {

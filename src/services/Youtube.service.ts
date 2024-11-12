@@ -29,11 +29,8 @@ export async function searchYoutubePlaylist(playlistId:string) {
 }
 
 export async function getYoutubeVideoData(keyId:string) {
-    console.log(keyId)
     const snippet = await (await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${keyId}&key=${CREDENTIAL}`)).json() as YoutubeSnippet
     const contentDetails = await (await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${keyId}&key=${CREDENTIAL}`)).json() as YoutubeContentDetails
-
-    console.log(snippet)
 
     return {
         title: snippet.items[0].snippet.title,

@@ -13,7 +13,6 @@ const io = new Server({
 io.on("connection", (socket) => {
     console.log("Socket enabled");
     socket.on("reloadQueuesInPlaylist", async (playlistId) => {
-        console.log("Reloading queues in playlist", playlistId);
         io.emit("reloadQueuesInPlaylist", playlistId);
     });
 })
