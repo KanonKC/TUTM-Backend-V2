@@ -11,12 +11,12 @@ datasource db {
 }
 
 model Playlist {
-    id              String   @id //@default(cuid())
-    // slug            String   @unique
-    type            String
-    currentIndex    Int?
-    queues          Queue[]
-    createdAt       DateTime @default(now())
+    id                      String   @id //@default(cuid())
+    type                    String
+    currentQueueId          String?  @unique
+    currentQueue            Queue?   @relation("CurrentQueue",fields: [currentQueueId], references: [id])
+    queues                  Queue[]
+    createdAt               DateTime @default(now())
 }
 
 model YoutubeVideo {
@@ -34,11 +34,16 @@ model YoutubeVideo {
 }
 
 model Queue {
-    id              String       @id @default(cuid())
-    youtubeVideo    YoutubeVideo @relation(fields: [youtubeVideoId], references: [id])
-    youtubeVideoId  String
-    playlist        Playlist     @relation(fields: [playlistId], references: [id])
-    playlistId      String
-    playedCount     Int          @default(0)
-    createdAt       DateTime     @default(now())
+    id                  String       @id @default(cuid())
+    youtubeVideo        YoutubeVideo @relation(fields: [youtubeVideoId], references: [id])
+    youtubeVideoId      String
+    playlist            Playlist     @relation(fields: [playlistId], references: [id])
+    playlistId          String
+    currentAtPlaylist   Playlist?    @relation("CurrentQueue")
+    playedCount         Int          @default(0)
+    order               Int?
+    createdAt           DateTime     @default(now())
+    updateAt            DateTime     @updatedAt
+
+    @@unique([playlistId, order])
 }

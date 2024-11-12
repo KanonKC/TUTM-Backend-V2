@@ -100,6 +100,9 @@ export interface YoutubeSnippet {
                 },
                 medium: {
                     url: string;
+                },
+                high: {
+                    url: string;
                 }
             }
         }
