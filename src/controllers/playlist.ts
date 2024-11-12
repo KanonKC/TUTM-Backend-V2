@@ -74,72 +74,70 @@ export async function playNext(playlistId: string) {
 	const playlist = await prisma.playlist.findUnique({
 		where: { id: playlistId },
 		include: {
-			firstQueue: true,
-			lastQueue: true,
 			currentQueue: true,
+            queues: {
+                orderBy: { order: "asc" },
+            }
 		},
 	});
 
 	if (!playlist) throw new Error("Playlist not found");
 
-    let nextCurrentQueueId;
-
-	// Current queue is null -> be first one
-	if (!playlist.currentQueueId || !playlist.currentQueue) {
-        nextCurrentQueueId = playlist.firstQueue?.id;
-	}
-	// Current queue is not null: (Last index)
-	else if (playlist.currentQueueId === playlist.lastQueueId) {
-		nextCurrentQueueId = playlist.firstQueue?.id;
-	}
-	// Current queue is not null: (Not last index)
-	else {
-		nextCurrentQueueId = playlist.currentQueue.nextQueueId;
+	let nextQueueOrder = 0;
+	if (playlist.currentQueue) {
+        nextQueueOrder = (playlist.currentQueue.order + 1) % playlist.queues.length;
 	}
 
-    return prisma.playlist.update({
-        where: { id: playlistId },
-        data: { currentQueueId: nextCurrentQueueId },
-    })
+    const nextQueue = await prisma.queue.findUniqueOrThrow({
+        where: {
+            playlistId_order: {
+                playlistId: playlistId,
+                order: nextQueueOrder,
+            },
+        },
+    });
+
+	return prisma.playlist.update({
+		where: { id: playlistId },
+		data: { currentQueueId: nextQueue.id },
+	});
 }
 
 export async function playPrevious(playlistId: string) {
 	const playlist = await prisma.playlist.findUnique({
 		where: { id: playlistId },
 		include: {
-			firstQueue: true,
-			lastQueue: true,
-			currentQueue: {
-                include: { prevQueue: true },
-            },
+			currentQueue: true,
+            queues: {
+                orderBy: { order: "asc" },
+            }
 		},
 	});
 
 	if (!playlist) throw new Error("Playlist not found");
 
-    let nextCurrentQueueId;
-
-	// Current queue is null -> be first one
-	if (!playlist.currentQueueId || !playlist.currentQueue) {
-        nextCurrentQueueId = playlist.firstQueue?.id;
-	}
-	// Current queue is not null: (First index)
-	else if (playlist.currentQueueId === playlist.firstQueueId) {
-		nextCurrentQueueId = playlist.lastQueue?.id;
-	}
-	// Current queue is not null: (Not first index)
-	else {
-		nextCurrentQueueId = playlist.currentQueue.prevQueue?.id;
+	let prevQueueOrder = playlist.queues.length - 1;
+	if (playlist.currentQueue) {
+        prevQueueOrder = (playlist.currentQueue.order - 1) % playlist.queues.length;
 	}
 
-    return prisma.playlist.update({
-        where: { id: playlistId },
-        data: { currentQueueId: nextCurrentQueueId },
-    })
+    const prevQueue = await prisma.queue.findUniqueOrThrow({
+        where: {
+            playlistId_order: {
+                playlistId: playlistId,
+                order: prevQueueOrder,
+            },
+        },
+    });
+
+	return prisma.playlist.update({
+		where: { id: playlistId },
+		data: { currentQueueId: prevQueue.id },
+	});
 }
 
 export async function playAlgorithm(playlistId: string) {
-    throw new Error("Not implemented yet");
+	throw new Error("Not implemented yet");
 	// const playlist = await prisma.playlist.findUnique({
 	// 	where: { id: playlistId },
 	// });
