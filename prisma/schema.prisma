@@ -41,7 +41,7 @@ model Queue {
     playlistId          String
     currentAtPlaylist   Playlist?    @relation("CurrentQueue")
     playedCount         Int          @default(0)
-    order               Int
+    order               Int?
     createdAt           DateTime     @default(now())
     updateAt            DateTime     @updatedAt
 

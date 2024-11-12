@@ -1,65 +1,100 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { addVideoToQueue, clearQueueInPlaylist, deleteQueueById, getAllQueuesInPlaylist, getQueueById, increaseQueuePlayedCount, swapQueuePosition } from "../controllers/queue";
+import {
+	addVideoToQueue,
+	clearQueueInPlaylist,
+	deleteQueueById,
+	getAllQueuesInPlaylist,
+	getQueueById,
+	increaseQueuePlayedCount,
+    reOrderQueue,
+    ReOrderQueuePayload,
+} from "../controllers/queue";
 import { listWrap } from "../utilities/ListWrapper";
 
-export async function getAllQueuesInPlaylistView(request: FastifyRequest<{
-    Params: { playlistId: string }
-}>,replay: FastifyReply) {
-    const id = request.params.playlistId
-    const queues = await getAllQueuesInPlaylist(id)
-    replay.send(listWrap(queues)) 
+export async function getAllQueuesInPlaylistView(
+	request: FastifyRequest<{
+		Params: { playlistId: string };
+	}>,
+	replay: FastifyReply
+) {
+	const id = request.params.playlistId;
+	const queues = await getAllQueuesInPlaylist(id);
+	replay.send(listWrap(queues));
 }
 
-export async function addVideoToQueueView(request: FastifyRequest<{
-    Params: { playlistId: string }
-    Body: { videoId: string }
-}>,replay: FastifyReply) {
-    const playlistId = request.params.playlistId
-    const videoId = request.body.videoId
-    const queue = await addVideoToQueue(playlistId, videoId)
-    replay.send(queue)
+export async function addVideoToQueueView(
+	request: FastifyRequest<{
+		Params: { playlistId: string };
+		Body: { videoId: string };
+	}>,
+	replay: FastifyReply
+) {
+	const playlistId = request.params.playlistId;
+	const videoId = request.body.videoId;
+	const queue = await addVideoToQueue(playlistId, videoId);
+	replay.send(queue);
 }
 
-export async function clearQueueInPlaylistView(request: FastifyRequest<{
-    Params: { playlistId: string }
-}>,replay: FastifyReply) {
-    const playlistId = request.params.playlistId
-    await clearQueueInPlaylist(playlistId)
-    replay.status(204).send()
+export async function clearQueueInPlaylistView(
+	request: FastifyRequest<{
+		Params: { playlistId: string };
+	}>,
+	replay: FastifyReply
+) {
+	const playlistId = request.params.playlistId;
+	await clearQueueInPlaylist(playlistId);
+	replay.status(204).send();
 }
 
-export async function getQueueByIdView(request: FastifyRequest<{
-    Params: { queueId: string }
-}>,replay: FastifyReply) {
-    const queueId = request.params.queueId
-    const queue = await getQueueById(queueId)
-    replay.send(queue)
+export async function getQueueByIdView(
+	request: FastifyRequest<{
+		Params: { queueId: string };
+	}>,
+	replay: FastifyReply
+) {
+	const queueId = request.params.queueId;
+	const queue = await getQueueById(queueId);
+	replay.send(queue);
 }
 
-export async function deleteQueueByIdView(request: FastifyRequest<{
-    Params: { queueId: string }
-}>,replay: FastifyReply) {
-    const queueId = request.params.queueId
-    await deleteQueueById(queueId)
-    replay.status(204).send()
+export async function deleteQueueByIdView(
+	request: FastifyRequest<{
+		Params: { queueId: string };
+	}>,
+	replay: FastifyReply
+) {
+	const queueId = request.params.queueId;
+	await deleteQueueById(queueId);
+	replay.status(204).send();
 }
 
-export async function increaseQueuePlayedCountView(request: FastifyRequest<{
-    Params: { queueId: string }
-}>,replay: FastifyReply) {
-    const queueId = request.params.queueId
-    const queue = await increaseQueuePlayedCount(queueId)
-    replay.send(queue)
+export async function increaseQueuePlayedCountView(
+	request: FastifyRequest<{
+		Params: { queueId: string };
+	}>,
+	replay: FastifyReply
+) {
+	const queueId = request.params.queueId;
+	const queue = await increaseQueuePlayedCount(queueId);
+	replay.send(queue);
 }
 
-export async function swapQueuePositionView(request: FastifyRequest<{
-    Querystring: { queueId1: string, queueId2: string }
-}>,replay: FastifyReply) {
-    try {
-        const { queueId1, queueId2 } = request.query
-        const queue = await swapQueuePosition(queueId1, queueId2)
-        replay.send(queue)
-    } catch (error) {
-        replay.status(400).send({ error })
-    }
+export async function reOrderQueueView(
+	request: FastifyRequest<{
+		Params: { playlistId: string };
+        Body: ReOrderQueuePayload
+	}>,
+	replay: FastifyReply
+) {
+	try {
+		const { playlistId } = request.params;
+		const queue = await reOrderQueue(
+			playlistId,
+			request.body,
+		);
+		replay.send(queue);
+	} catch (error) {
+		console.log(error);
+		replay.status(400).send({ error });
+	}
 }
