@@ -49,8 +49,8 @@ export async function addVideoToQueue(playlistId: string, videoId: string) {
 	}
 
 	const queues = await getAllQueuesInPlaylist(playlistId);
-	console.log(queues);
-	const nextOrder =
+
+    const nextOrder =
 		queues.length === 0
 			? 0
 			: Math.max(...queues.map((q) => q.order ?? -1)) + 1;
