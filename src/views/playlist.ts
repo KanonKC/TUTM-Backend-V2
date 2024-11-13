@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import {
 	createPlaylist,
 	getAllPlaylists,
-	getPlaylistWithCurrentVideoById,
+	getPlaylistById,
 	playAlgorithm,
 	playByQueueId,
 	playNext,
@@ -11,7 +11,7 @@ import {
 import { listWrap } from "../utilities/ListWrapper";
 
 export async function getAllPLaylistsView(
-	request: FastifyRequest,
+	_: FastifyRequest,
 	reply: FastifyReply
 ) {
 	const playlists = await getAllPlaylists();
@@ -32,7 +32,7 @@ export async function createPlaylistView(
 	}
 }
 
-export async function getPlaylistWithCurrentVideoByIdView(
+export async function getPlaylistByIdView(
 	request: FastifyRequest<{
 		Params: { playlistId: string };
 	}>,
@@ -40,7 +40,7 @@ export async function getPlaylistWithCurrentVideoByIdView(
 ) {
 	const id = request.params.playlistId;
 	try {
-		const playlist = await getPlaylistWithCurrentVideoById(id);
+		const playlist = await getPlaylistById(id);
 		reply.send(playlist);
 	} catch (error) {
 		reply.code(404).send({ error: "Error" });

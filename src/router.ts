@@ -2,11 +2,11 @@ import fastify from "fastify";
 import {
 	createPlaylistView,
 	getAllPLaylistsView,
-	getPlaylistWithCurrentVideoByIdView,
 	playNextView,
 	playPreviousView,
 	playAlgorithmView,
 	playByQueueIdView,
+    getPlaylistByIdView,
 } from "./views/playlist";
 import {
 	addVideoToQueueView,
@@ -31,7 +31,7 @@ server.register(cors, {
 
 server.get("/playlists", getAllPLaylistsView);
 server.post("/playlists", createPlaylistView);
-server.get("/playlists/:playlistId", getPlaylistWithCurrentVideoByIdView);
+server.get("/playlists/:playlistId", getPlaylistByIdView);
 // server.put('/playlists/:playlistId/play/index/:indexNo', playIndexView)
 server.put("/playlists/:playlistId/play/queues/:queueId", playByQueueIdView);
 server.put("/playlists/:playlistId/play/next", playNextView);
