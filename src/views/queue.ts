@@ -1,13 +1,14 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import {
-	addVideoToQueue,
+    addSpotifyTrackToQueue,
+	addYoutubeVideoToQueue,
 	clearQueueInPlaylist,
 	deleteQueueById,
 	getAllQueuesInPlaylist,
 	getQueueById,
 	increaseQueuePlayedCount,
-    reOrderQueue,
-    ReOrderQueuePayload,
+	reOrderQueue,
+	ReOrderQueuePayload,
 } from "../controllers/queue";
 import { listWrap } from "../utilities/ListWrapper";
 
@@ -22,7 +23,7 @@ export async function getAllQueuesInPlaylistView(
 	replay.send(listWrap(queues));
 }
 
-export async function addVideoToQueueView(
+export async function addYoutubeVideoToQueueView(
 	request: FastifyRequest<{
 		Params: { playlistId: string };
 		Body: { videoId: string };
@@ -31,8 +32,25 @@ export async function addVideoToQueueView(
 ) {
 	const playlistId = request.params.playlistId;
 	const videoId = request.body.videoId;
-	const queue = await addVideoToQueue(playlistId, videoId);
+	const queue = await addYoutubeVideoToQueue(playlistId, videoId);
 	replay.send(queue);
+}
+
+export async function addSpotifyTrackToQueueView(
+	request: FastifyRequest<{
+		Params: { playlistId: string };
+		Body: { trackId: string };
+	}>,
+	replay: FastifyReply
+) {
+    try {
+        const { playlistId } = request.params;
+        const { trackId } = request.body;
+        const queue = await addSpotifyTrackToQueue(playlistId, trackId);
+        replay.send(queue);
+    } catch (error) {
+        replay.status(400).send({ error: String(error) });
+    }
 }
 
 export async function clearQueueInPlaylistView(
@@ -82,16 +100,13 @@ export async function increaseQueuePlayedCountView(
 export async function reOrderQueueView(
 	request: FastifyRequest<{
 		Params: { playlistId: string };
-        Body: ReOrderQueuePayload
+		Body: ReOrderQueuePayload;
 	}>,
 	replay: FastifyReply
 ) {
 	try {
 		const { playlistId } = request.params;
-		const queue = await reOrderQueue(
-			playlistId,
-			request.body,
-		);
+		const queue = await reOrderQueue(playlistId, request.body);
 		replay.send(queue);
 	} catch (error) {
 		console.log(error);

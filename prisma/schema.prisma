@@ -10,9 +10,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Account {
+    id                      String   @id @default(cuid())
+    username                String   @unique
+    spotifyId               String?  @unique
+    spotifyAccessToken      String?  @unique
+    spotifyRefreshToken     String?
+    spotifyTokenExpiresAt   DateTime?
+    playlists               Playlist[]
+    createdAt               DateTime @default(now())
+}
+
 model Playlist {
     id                      String   @id //@default(cuid())
     type                    String
+    ownerId                 String?
+    owner                   Account? @relation(fields: [ownerId], references: [id])
     currentQueueId          String?  @unique
     currentQueue            Queue?   @relation("CurrentQueue",fields: [currentQueueId], references: [id])
     queues                  Queue[]
@@ -27,7 +40,8 @@ model YoutubeVideo {
     description     String?
     thumbnail       String
     duration        Int
-    queues          Queue[]
+    queueId         String   @unique
+    queue           Queue    @relation(fields: [queueId], references: [id])
     createdAt       DateTime @default(now())
 }
 
@@ -38,17 +52,16 @@ model SpotifyTrack {
     artist          String
     thumbnail       String
     duration        Int
-    queues          Queue[]
+    queueId         String   @unique
+    queue           Queue    @relation(fields: [queueId], references: [id])
     createdAt       DateTime @default(now())
 }
 
 model Queue {
     id                  String          @id @default(cuid())
     type                String          @default("youtube-video")
-    youtubeVideo        YoutubeVideo?   @relation(fields: [youtubeVideoId], references: [id])
-    youtubeVideoId      String?
-    spotifyTrack        SpotifyTrack?   @relation(fields: [spotifyTrackId], references: [id])
-    spotifyTrackId      String?
+    youtubeVideo        YoutubeVideo?
+    spotifyTrack        SpotifyTrack?
     playlist            Playlist        @relation(fields: [playlistId], references: [id])
     playlistId          String
     currentAtPlaylist   Playlist?       @relation("CurrentQueue")

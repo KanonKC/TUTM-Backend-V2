@@ -5,12 +5,23 @@ export async function getAllPlaylists() {
 	return playlists;
 }
 
-export async function createPlaylist(body: { id: string }) {
+export interface CreatePlaylistPayload {
+    id: string;
+    spotifyAccessToken?: string;
+}
+
+export async function createPlaylist(payload: CreatePlaylistPayload) {
+
+    const account = await prisma.account.findUnique({
+        where: { spotifyAccessToken: payload.spotifyAccessToken },
+    })
+
 	const playlist = await prisma.playlist.create({
 		data: {
 			// slug: body.id,
-			id: body.id,
+			id: payload.id,
 			type: "linear",
+            ownerId: account?.id,
 		},
 	});
 	return playlist;

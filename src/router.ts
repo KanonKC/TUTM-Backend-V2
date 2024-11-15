@@ -1,33 +1,37 @@
+import cors from "@fastify/cors";
 import fastify from "fastify";
+import { createOrUpdateAccountBySpotifyAccountView, getAccountBySpotifyAccountView } from "./views/account";
 import {
-	createPlaylistView,
-	getAllPLaylistsView,
-	playNextView,
-	playPreviousView,
-	playAlgorithmView,
-	playByQueueIdView,
+    createPlaylistView,
+    getAllPLaylistsView,
     getPlaylistByIdView,
+    playAlgorithmView,
+    playByQueueIdView,
+    playNextView,
+    playPreviousView,
 } from "./views/playlist";
 import {
-	addVideoToQueueView,
-	clearQueueInPlaylistView,
-	deleteQueueByIdView,
-	getAllQueuesInPlaylistView,
-	getQueueByIdView,
-	increaseQueuePlayedCountView,
+    addSpotifyTrackToQueueView,
+    addYoutubeVideoToQueueView,
+    clearQueueInPlaylistView,
+    deleteQueueByIdView,
+    getAllQueuesInPlaylistView,
+    getQueueByIdView,
+    increaseQueuePlayedCountView,
     reOrderQueueView,
 } from "./views/queue";
-import cors from "@fastify/cors";
 import {
-	searchYoutubePlaylistAsBaseAttributesView,
-	searchYoutubeVideoAsBaseAttributesView,
+    searchYoutubePlaylistAsBaseAttributesView,
+    searchYoutubeVideoAsBaseAttributesView,
 } from "./views/youtube";
-import { reOrderQueue } from "./controllers/queue";
 
 const server = fastify();
 server.register(cors, {
 	origin: "*",
 });
+
+server.post("/accounts/spotify", createOrUpdateAccountBySpotifyAccountView);
+server.get("/accounts/spotify", getAccountBySpotifyAccountView);
 
 server.get("/playlists", getAllPLaylistsView);
 server.post("/playlists", createPlaylistView);
@@ -39,7 +43,8 @@ server.put("/playlists/:playlistId/play/prev", playPreviousView);
 server.put("/playlists/:playlistId/play/algorithm", playAlgorithmView);
 
 server.get("/playlists/:playlistId/queues", getAllQueuesInPlaylistView);
-server.post("/playlists/:playlistId/queues", addVideoToQueueView);
+server.post("/playlists/:playlistId/queues/youtube-video", addYoutubeVideoToQueueView);
+server.post("/playlists/:playlistId/queues/spotify-track", addSpotifyTrackToQueueView);
 server.delete("/playlists/:playlistId/queues", clearQueueInPlaylistView);
 
 server.get("/queues/:queueId", getQueueByIdView);

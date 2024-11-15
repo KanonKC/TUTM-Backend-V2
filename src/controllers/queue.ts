@@ -2,6 +2,7 @@ import { Queue, YoutubeVideo } from "@prisma/client";
 import { prisma } from "../prisma";
 import { getYoutubeVideoData } from "../services/Youtube.service";
 import { playNext } from "./playlist";
+import { getTrack } from "../services/Spotify.service";
 
 export async function getAllQueuesInPlaylist(playlistId: string) {
 	const queues = await prisma.queue.findMany({
@@ -13,33 +14,17 @@ export async function getAllQueuesInPlaylist(playlistId: string) {
 	return queues;
 }
 
-export async function addVideoToQueue(playlistId: string, videoId: string) {
-	let videoModel: YoutubeVideo | null = null;
-	try {
-		videoModel = await prisma.youtubeVideo.findUnique({
-			where: { id: videoId },
-		});
-		if (!videoModel) {
-			throw new Error("Video not found");
-		}
-	} catch (err) {
-		const videoData = await getYoutubeVideoData(videoId);
-		videoModel = await prisma.youtubeVideo.create({
-			data: {
-				youtubeId: videoData.url,
-				title: videoData.title,
-				channelTitle: videoData.channel_title,
-				description: videoData.description.slice(0, 255),
-				thumbnail: videoData.thumbnail,
-				duration: videoData.duration,
-			},
-		});
+export async function getNextQueueOrder(playlistId: string) {
+	const queues = await getAllQueuesInPlaylist(playlistId);
+	return queues.length === 0
+		? 0
+		: Math.max(...queues.map((q) => q.order ?? -1)) + 1;
+}
 
-		if (!videoModel) {
-			throw new Error("Failed to create video");
-		}
-	}
-
+export async function addYoutubeVideoToQueue(
+	playlistId: string,
+	videoId: string
+) {
 	const playlist = await prisma.playlist.findUnique({
 		where: { id: playlistId },
 	});
@@ -48,26 +33,76 @@ export async function addVideoToQueue(playlistId: string, videoId: string) {
 		throw new Error("Playlist not found");
 	}
 
-	const queues = await getAllQueuesInPlaylist(playlistId);
-
-	const nextOrder =
-		queues.length === 0
-			? 0
-			: Math.max(...queues.map((q) => q.order ?? -1)) + 1;
-	const video = videoModel;
+	const videoData = await getYoutubeVideoData(videoId);
+	const nextOrder = await getNextQueueOrder(playlistId);
 
 	const queue = await prisma.queue.create({
 		data: {
 			playlistId,
-			youtubeVideoId: video.id,
 			order: nextOrder,
+			youtubeVideo: {
+				create: {
+					youtubeId: videoData.url,
+					title: videoData.title,
+					channelTitle: videoData.channel_title,
+					description: videoData.description.slice(0, 255),
+					thumbnail: videoData.thumbnail,
+					duration: videoData.duration,
+				},
+			},
 		},
+		include: { youtubeVideo: true },
 	});
 
 	return {
 		...queue,
-		video,
+		video: queue.youtubeVideo,
 	};
+}
+
+export async function addSpotifyTrackToQueue(
+	playlistId: string,
+	trackId: string
+) {
+
+    const playlist = await prisma.playlist.findUnique({
+		where: { id: playlistId },
+		include: { owner: true },
+	});
+
+    if (!playlist) {
+		throw new Error("Playlist not found");
+	}
+
+
+    if (!playlist.owner?.spotifyAccessToken) {
+		throw new Error("Playlist owner has not connected Spotify");
+	}
+
+    const { data: track } = await getTrack(
+		trackId,
+		playlist.owner.spotifyAccessToken
+	);
+
+    const nextOrder = await getNextQueueOrder(playlistId);
+
+    return prisma.queue.create({
+        data: {
+            type: 'spotify-track',
+            playlistId,
+            order: nextOrder,
+            spotifyTrack: {
+                create: {
+                    spotifyUri: track.uri,
+                    title: track.name,
+                    artist: track.artists.map(a => a.name).join(', '),
+                    thumbnail: track.album.images[0].url,
+                    duration: Math.ceil(track.duration_ms/1000),
+                }
+            }
+        },
+        include: { spotifyTrack: true }
+    })
 }
 
 export async function clearQueueInPlaylist(playlistId: string) {

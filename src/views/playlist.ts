@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import {
 	createPlaylist,
+	CreatePlaylistPayload,
 	getAllPlaylists,
 	getPlaylistById,
 	playAlgorithm,
@@ -20,7 +21,7 @@ export async function getAllPLaylistsView(
 
 export async function createPlaylistView(
 	request: FastifyRequest<{
-		Body: { id: string };
+		Body: CreatePlaylistPayload;
 	}>,
 	reply: FastifyReply
 ) {
