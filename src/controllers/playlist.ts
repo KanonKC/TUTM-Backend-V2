@@ -16,17 +16,22 @@ export async function createPlaylist(body: { id: string }) {
 	return playlist;
 }
 
-export async function getPlaylistById(playlistId: string) {
+export async function getPlaylistById(
+	playlistId: string
+) {
 	const playlist = await prisma.playlist.findUniqueOrThrow({
 		where: { id: playlistId },
 		include: {
 			queues: {
 				where: { playlistId },
 				orderBy: { order: "asc" },
-                include: { youtubeVideo: true },
+				include: { youtubeVideo: true },
 			},
 			currentQueue: {
-				include: { youtubeVideo: true },
+				include: {
+					youtubeVideo: true,
+					spotifyTrack: true,
+				},
 			},
 		},
 	});

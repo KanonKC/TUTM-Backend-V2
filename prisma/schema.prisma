@@ -27,23 +27,35 @@ model YoutubeVideo {
     description     String?
     thumbnail       String
     duration        Int
-    isCleared       Boolean @default(false)
-    totalPlayed     Int     @default(0)
+    queues          Queue[]
+    createdAt       DateTime @default(now())
+}
+
+model SpotifyTrack {
+    id              String   @id @default(cuid())
+    spotifyUri      String
+    title           String
+    artist          String
+    thumbnail       String
+    duration        Int
     queues          Queue[]
     createdAt       DateTime @default(now())
 }
 
 model Queue {
-    id                  String       @id @default(cuid())
-    youtubeVideo        YoutubeVideo @relation(fields: [youtubeVideoId], references: [id])
-    youtubeVideoId      String
-    playlist            Playlist     @relation(fields: [playlistId], references: [id])
+    id                  String          @id @default(cuid())
+    type                String          @default("youtube-video")
+    youtubeVideo        YoutubeVideo?   @relation(fields: [youtubeVideoId], references: [id])
+    youtubeVideoId      String?
+    spotifyTrack        SpotifyTrack?   @relation(fields: [spotifyTrackId], references: [id])
+    spotifyTrackId      String?
+    playlist            Playlist        @relation(fields: [playlistId], references: [id])
     playlistId          String
-    currentAtPlaylist   Playlist?    @relation("CurrentQueue")
-    playedCount         Int          @default(0)
+    currentAtPlaylist   Playlist?       @relation("CurrentQueue")
+    playedCount         Int             @default(0)
     order               Int?
-    createdAt           DateTime     @default(now())
-    updateAt            DateTime     @updatedAt
+    createdAt           DateTime        @default(now())
+    updateAt            DateTime        @updatedAt
 
     @@unique([playlistId, order])
 }
